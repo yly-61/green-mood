@@ -16,6 +16,14 @@
     lastMessageAt: null,
   };
 
+  function emitStatusChange() {
+    window.dispatchEvent(
+      new CustomEvent("greenmood:mqtt-status", {
+        detail: getStatus(),
+      })
+    );
+  }
+
   function buildBrokerUrl() {
     return `wss://${MQTT_CONFIG.brokerHost}:${MQTT_CONFIG.brokerPort}${MQTT_CONFIG.brokerPath}`;
   }
@@ -62,6 +70,7 @@
     state.client.subscribe(MQTT_CONFIG.sensorTopic, { qos: 0 }, (error) => {
       if (error) {
         state.lastError = error;
+        emitStatusChange();
         console.error("[GreenMoodMQTT] Failed to subscribe sensor topic:", error);
         return;
       }
@@ -101,28 +110,33 @@
     client.on("connect", () => {
       state.status = "connected";
       state.lastError = null;
+      emitStatusChange();
       console.info("[GreenMoodMQTT] Connected to EMQX Cloud.");
       subscribeSensorTopic();
     });
 
     client.on("reconnect", () => {
       state.status = "reconnecting";
+      emitStatusChange();
       console.info("[GreenMoodMQTT] Reconnecting...");
     });
 
     client.on("close", () => {
       state.status = "closed";
+      emitStatusChange();
       console.warn("[GreenMoodMQTT] Connection closed.");
     });
 
     client.on("offline", () => {
       state.status = "offline";
+      emitStatusChange();
       console.warn("[GreenMoodMQTT] Client offline.");
     });
 
     client.on("error", (error) => {
       state.status = "error";
       state.lastError = error;
+      emitStatusChange();
       console.error("[GreenMoodMQTT] Client error:", error);
     });
 
@@ -131,6 +145,8 @@
 
   function connect() {
     if (typeof window.mqtt === "undefined") {
+      state.status = "error";
+      emitStatusChange();
       console.error("[GreenMoodMQTT] mqtt.min.js is not loaded.");
       return null;
     }
@@ -140,6 +156,7 @@
     }
 
     state.status = "connecting";
+    emitStatusChange();
 
     state.client = window.mqtt.connect(buildBrokerUrl(), {
       username: MQTT_CONFIG.username,
@@ -163,6 +180,7 @@
     state.client.end();
     state.client = null;
     state.status = "idle";
+    emitStatusChange();
   }
 
   function publishControl(payload, options = {}) {

@@ -182,13 +182,17 @@ const editNameToggle = document.querySelector("#edit-name-toggle");
 const renamePanel = document.querySelector("#rename-panel");
 const plantNameInput = document.querySelector("#plant-name-input");
 const saveNameButton = document.querySelector("#save-name");
+const profileDays = document.querySelector("#profile-days");
 const metricsGrid = document.querySelector("#metrics-grid");
 const comfortLabel = document.querySelector("#comfort-label");
 const comfortFaces = document.querySelectorAll(".face-chip");
+const comfortTipToggle = document.querySelector("#comfort-tip-toggle");
+const comfortTipCard = document.querySelector("#comfort-tip-card");
 const pumpStatus = document.querySelector("#pump-status");
 const pumpSummary = document.querySelector("#pump-summary");
 const autoToggle = document.querySelector("#auto-toggle");
 const manualWaterButton = document.querySelector("#manual-water");
+const mqttStatusBadge = document.querySelector("#mqtt-status-badge");
 const refreshMetricsButton = document.querySelector("#refresh-metrics");
 const metricsUpdatedAt = document.querySelector("#metrics-updated-at");
 const toast = document.querySelector("#toast");
@@ -300,6 +304,18 @@ function getCurrentRecordedDateKey() {
   return getBeijingDateKey(lastUpdatedAt);
 }
 
+function updateProfileDays() {
+  const todayKey = getBeijingDateKey(new Date());
+  const today = fromDateKey(todayKey);
+  const start = new Date(
+    calendarStartDate.getFullYear(),
+    calendarStartDate.getMonth(),
+    calendarStartDate.getDate()
+  );
+  const diffDays = Math.max(0, Math.round((today - start) / 86400000));
+  profileDays.textContent = `陪伴你第 ${diffDays + 1} 天`;
+}
+
 function renderMetricIcon(icon) {
   const icons = {
     soil: `
@@ -347,6 +363,26 @@ function renderMetricIcon(icon) {
 
 function updateUpdatedAtLabel() {
   metricsUpdatedAt.textContent = `更新于 ${formatBeijingTime(lastUpdatedAt)}（北京时间）`;
+}
+
+function updateComfortTipVisibility(isVisible) {
+  comfortTipCard.classList.toggle("hidden", !isVisible);
+  comfortTipToggle.setAttribute("aria-expanded", String(isVisible));
+}
+
+function updateMqttStatus(statusInfo = {}) {
+  const isConnected = Boolean(statusInfo.connected);
+  const normalizedStatus = isConnected ? "connected" : statusInfo.status;
+  const nextState =
+    normalizedStatus === "connected"
+      ? { label: "连接成功", className: "is-connected" }
+      : normalizedStatus === "connecting" || normalizedStatus === "reconnecting"
+        ? { label: "连接中", className: "is-connecting" }
+        : { label: "未连接", className: "is-disconnected" };
+
+  mqttStatusBadge.textContent = nextState.label;
+  mqttStatusBadge.classList.remove("is-connected", "is-connecting", "is-disconnected");
+  mqttStatusBadge.classList.add(nextState.className);
 }
 
 function renderMetrics() {
@@ -757,6 +793,7 @@ function applyTelemetryUpdate(partialTelemetry = {}, options = {}) {
   renderMetrics();
   renderComfort();
   updateModeUI();
+  updateProfileDays();
   updateUpdatedAtLabel();
   renderCalendar();
 }
@@ -882,6 +919,7 @@ window.GreenMoodBridge = {
 function bindEvents() {
   enterAppButton.addEventListener("click", hideSplash);
   window.setTimeout(hideSplash, 1800);
+  window.setInterval(updateProfileDays, 60000);
 
   editNameToggle.addEventListener("click", () => {
     renamePanel.classList.toggle("hidden");
@@ -899,10 +937,28 @@ function bindEvents() {
     }
   });
 
+  comfortTipToggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const shouldShow = comfortTipCard.classList.contains("hidden");
+    updateComfortTipVisibility(shouldShow);
+  });
+
+  comfortTipCard.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  document.addEventListener("click", () => {
+    updateComfortTipVisibility(false);
+  });
+
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
       switchScreen(button.dataset.target);
     });
+  });
+
+  window.addEventListener("greenmood:mqtt-status", (event) => {
+    updateMqttStatus(event.detail);
   });
 
   autoToggle.addEventListener("click", () => {
@@ -988,7 +1044,10 @@ function bindEvents() {
 }
 
 function init() {
+  updateProfileDays();
   updateUpdatedAtLabel();
+  updateComfortTipVisibility(false);
+  updateMqttStatus({ status: "connecting" });
   renderMetrics();
   renderComfort();
   updatePlantNameUI();

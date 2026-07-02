@@ -43,14 +43,22 @@
                         ✎
                       </button>
                     </div>
-                    <p class="profile-days">陪伴你第 86 天</p>
+                    <p class="profile-days" id="profile-days">陪伴你第 1 天</p>
                   </div>
                 </div>
 
                 <div class="comfort-overview">
                   <div class="comfort-head">
                     <span>舒适度指数</span>
-                    <span class="mini-tip">i</span>
+                    <button
+                      class="mini-tip"
+                      id="comfort-tip-toggle"
+                      type="button"
+                      aria-expanded="false"
+                      aria-controls="comfort-tip-card"
+                    >
+                      i
+                    </button>
                   </div>
                   <div class="comfort-faces">
                     <div class="face-chip active" aria-label="舒适">
@@ -76,6 +84,23 @@
                     </div>
                   </div>
                   <p class="comfort-note" id="comfort-label">舒适</p>
+                  <div class="comfort-tip-card hidden" id="comfort-tip-card">
+                    <p class="comfort-tip-title">舒适度判定标准</p>
+                    <p class="comfort-tip-copy">
+                      舒适度指数会综合核心体征的 6 项数据来判断植物当前状态。
+                    </p>
+                    <ul class="comfort-tip-list">
+                      <li>土壤湿度建议保持在 35%-60%</li>
+                      <li>空气湿度建议保持在 45%-70%</li>
+                      <li>温度建议保持在 20°C-28°C</li>
+                      <li>光照强度建议保持在 500-1200 Lux</li>
+                      <li>储备水量建议高于 45%</li>
+                      <li>空气质量越稳定越好，数值越低越舒适</li>
+                    </ul>
+                    <p class="comfort-tip-copy">
+                      大多数指标在建议区间内时显示“舒适”，少量偏离时显示“一般”，多项偏离时显示“较差”。
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -113,6 +138,12 @@
               </div>
 
               <div class="watering-card soft-panel">
+                <div class="mqtt-status-row">
+                  <span class="eyebrow mqtt-status-label">MQTT 连接状态</span>
+                  <span class="mqtt-status-badge is-connecting" id="mqtt-status-badge">
+                    连接中
+                  </span>
+                </div>
                 <div class="watering-main">
                   <div class="avatar-wrap watering-avatar">
                     <img src="headshot.png" alt="植物缩略头像" class="avatar" />
@@ -155,7 +186,7 @@
 
             <section class="screen" data-screen="trend">
               <div class="trend-topbar">
-                <button class="ghost-icon large" type="button" aria-label="返回">←</button>
+                <span class="topbar-spacer" aria-hidden="true"></span>
                 <h2>历史趋势</h2>
                 <button class="ghost-icon large" type="button" aria-label="日历">🗓</button>
               </div>
