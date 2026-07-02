@@ -1,9 +1,11 @@
-.hero-card,
-.comfort-card,
-.metric-card,
-.controls-card,
+.profile-card,
+.rename-panel,
+.metrics-panel,
+.watering-card,
+.manual-card,
 .chart-card,
 .calendar-card,
+.guide-hero,
 .guide-card,
 .api-card,
 .tabbar {
@@ -11,53 +13,57 @@
   overflow: hidden;
 }
 
-.hero-card::after,
-.comfort-card::after,
+.profile-card::after,
+.metrics-panel::after,
 .chart-card::after,
 .calendar-card::after,
-.guide-card::after,
+.guide-hero::after,
 .api-card::after {
   content: "";
   position: absolute;
-  inset: auto -24px -48px auto;
-  width: 120px;
-  height: 120px;
-  border-radius: 36px;
-  background: radial-gradient(circle, rgba(132, 193, 118, 0.16), transparent 70%);
+  right: -22px;
+  bottom: -42px;
+  width: 110px;
+  height: 110px;
+  border-radius: 34px;
+  background: radial-gradient(circle, rgba(126, 194, 110, 0.12), transparent 70%);
   pointer-events: none;
 }
 
-.hero-card,
-.comfort-card,
+.profile-card,
+.metrics-panel,
+.watering-card,
+.manual-card,
 .chart-card,
 .calendar-card,
+.guide-hero,
 .guide-card,
 .api-card {
-  animation: rise-in 0.7s ease both;
+  animation: rise-in 0.72s ease both;
 }
 
 .metric-card {
-  animation: rise-in 0.75s ease both;
+  animation: rise-in 0.74s ease both;
 }
 
 .metric-card:nth-child(2) {
-  animation-delay: 0.05s;
+  animation-delay: 0.04s;
 }
 
 .metric-card:nth-child(3) {
-  animation-delay: 0.1s;
+  animation-delay: 0.08s;
 }
 
 .metric-card:nth-child(4) {
-  animation-delay: 0.15s;
+  animation-delay: 0.12s;
 }
 
 .metric-card:nth-child(5) {
-  animation-delay: 0.2s;
+  animation-delay: 0.16s;
 }
 
 .metric-card:nth-child(6) {
-  animation-delay: 0.25s;
+  animation-delay: 0.2s;
 }
 
 .tab-button,
@@ -65,7 +71,10 @@
 .water-button,
 .guide-button,
 .enter-button,
-.toggle-switch {
+.toggle-switch,
+.save-name-button,
+.icon-button,
+.ghost-icon {
   transition:
     transform 0.22s ease,
     box-shadow 0.22s ease,
@@ -79,7 +88,10 @@
 .water-button:active,
 .guide-button:active,
 .enter-button:active,
-.toggle-switch:active {
+.toggle-switch:active,
+.save-name-button:active,
+.icon-button:active,
+.ghost-icon:active {
   transform: scale(0.97);
 }
 
@@ -96,47 +108,78 @@
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 3;
 }
 
 .trend-line.soil {
-  stroke: #5ea668;
+  stroke: #5bbb41;
 }
 
 .trend-line.humidity {
-  stroke: #7fbea1;
+  stroke: #4b93ff;
+}
+
+.trend-line.temp {
+  stroke: #f4a100;
 }
 
 .trend-line.light {
-  stroke: #e2b968;
+  stroke: #f3c61a;
 }
 
 .chart-grid-line {
-  stroke: rgba(91, 124, 91, 0.12);
+  stroke: rgba(118, 139, 114, 0.14);
   stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+.chart-marker-line {
+  stroke: rgba(92, 184, 98, 0.72);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+
+.chart-marker-label {
+  fill: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.chart-marker-pill {
+  fill: #31b848;
 }
 
 .chart-dot {
-  stroke: rgba(255, 255, 255, 0.88);
+  stroke: rgba(255, 255, 255, 0.9);
   stroke-width: 2;
 }
 
 .chart-dot.soil {
-  fill: #5ea668;
+  fill: #5bbb41;
 }
 
 .chart-dot.humidity {
-  fill: #7fbea1;
+  fill: #4b93ff;
+}
+
+.chart-dot.temp {
+  fill: #f4a100;
 }
 
 .chart-dot.light {
-  fill: #e2b968;
+  fill: #f3c61a;
 }
 
 .chart-label {
-  fill: #6e8a72;
+  fill: #727c71;
   font-size: 10px;
-  font-family: "SF Pro Rounded", "Avenir Next", sans-serif;
+  font-family: "SF Pro Rounded", "PingFang SC", sans-serif;
+}
+
+.chart-side-label {
+  fill: #8a9388;
+  font-size: 10px;
+  font-family: "SF Pro Rounded", "PingFang SC", sans-serif;
 }
 
 @keyframes rise-in {

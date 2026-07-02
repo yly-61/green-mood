@@ -1,0 +1,11 @@
+{
+  "device_id":"GreenMood001",
+  "soil_moisture":36,
+  "air_humidity":58,
+  "temperature":25.4,
+  "light":820,
+  "water_level":72,
+  "air_quality":430,
+  "pump_status":"off",
+  "mode":"auto"
+}

@@ -14,113 +14,179 @@
 
         <section class="splash-screen" id="splash-screen" aria-label="启动页">
           <div class="splash-orb"></div>
-          <p class="eyebrow">Smart Plant Care</p>
+          <p class="eyebrow splash-eyebrow">Smart Plant Care</p>
           <h1>Green Mood</h1>
-          <p class="splash-copy">和你的绿萝宝宝一起，感受每一寸舒适生长。</p>
-          <button class="enter-button" id="enter-app">进入设备</button>
+          <p class="splash-copy">
+            和你的<span data-plant-name>绿萝宝宝</span>一起，感受每一寸舒适生长。
+          </p>
+          <button class="enter-button" id="enter-app" type="button">进入设备</button>
         </section>
 
         <div class="phone-screen">
-          <header class="topbar">
-            <div>
-              <p class="eyebrow">Plant Companion</p>
-              <h2>Green Mood</h2>
-            </div>
-            <div class="device-pill" id="device-id">GreenMood001</div>
-          </header>
-
           <main class="screens">
             <section class="screen active" data-screen="home">
-              <div class="hero-card soft-panel">
-                <div class="hero-copy">
-                  <p class="eyebrow">今日状态</p>
-                  <h3>绿萝宝宝</h3>
-                  <p class="hero-text">
-                    空气轻盈、湿度稳定，今天适合继续保持自动养护。
-                  </p>
-                  <div class="hero-tags">
-                    <span class="tag">在线守护</span>
-                    <span class="tag" id="mode-tag">AUTO</span>
+              <div class="profile-card soft-panel">
+                <div class="profile-main">
+                  <div class="avatar-wrap profile-avatar">
+                    <img src="headshot.png" alt="绿萝宝宝头像" class="avatar" />
+                  </div>
+
+                  <div class="profile-copy">
+                    <div class="name-row">
+                      <h2 class="plant-name" data-plant-name>绿萝宝宝</h2>
+                      <button
+                        class="icon-button"
+                        id="edit-name-toggle"
+                        type="button"
+                        aria-label="修改植物名称"
+                      >
+                        ✎
+                      </button>
+                    </div>
+                    <p class="profile-days">陪伴你第 86 天</p>
                   </div>
                 </div>
-                <div class="avatar-wrap">
-                  <img src="headshot.png" alt="绿萝宝宝头像" class="avatar" />
+
+                <div class="comfort-overview">
+                  <div class="comfort-head">
+                    <span>舒适度指数</span>
+                    <span class="mini-tip">i</span>
+                  </div>
+                  <div class="comfort-faces">
+                    <div class="face-chip active" aria-label="舒适">
+                      <svg class="face-icon" viewBox="0 0 32 32" aria-hidden="true">
+                        <circle cx="11" cy="12" r="1.8"></circle>
+                        <circle cx="21" cy="12" r="1.8"></circle>
+                        <path d="M10 20c1.9 2.1 4 3.1 6 3.1s4.1-1 6-3.1"></path>
+                      </svg>
+                    </div>
+                    <div class="face-chip" aria-label="一般">
+                      <svg class="face-icon" viewBox="0 0 32 32" aria-hidden="true">
+                        <circle cx="11" cy="12" r="1.8"></circle>
+                        <circle cx="21" cy="12" r="1.8"></circle>
+                        <path d="M10.5 20h11"></path>
+                      </svg>
+                    </div>
+                    <div class="face-chip" aria-label="较差">
+                      <svg class="face-icon" viewBox="0 0 32 32" aria-hidden="true">
+                        <circle cx="11" cy="12" r="1.8"></circle>
+                        <circle cx="21" cy="12" r="1.8"></circle>
+                        <path d="M10 23c1.9-2.1 4-3.1 6-3.1s4.1 1 6 3.1"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="comfort-note" id="comfort-label">舒适</p>
                 </div>
               </div>
 
-              <div class="comfort-card soft-panel">
-                <div>
-                  <p class="eyebrow">舒适度指数</p>
-                  <div class="comfort-score">
-                    <strong id="comfort-score">0</strong>
-                    <span>/ 100</span>
-                  </div>
+              <div class="rename-panel soft-panel hidden" id="rename-panel">
+                <div class="rename-copy">
+                  <p class="eyebrow">自定义昵称</p>
+                  <p class="rename-tip">修改后会同步更新启动页、首页和养护建议文案。</p>
                 </div>
-                <div class="comfort-ring">
-                  <div class="ring-fill" id="ring-fill"></div>
-                  <span id="comfort-label">生长舒适</span>
-                </div>
-              </div>
-
-              <div class="metrics-grid" id="metrics-grid"></div>
-
-              <div class="controls-card soft-panel">
-                <div class="control-row">
-                  <div>
-                    <p class="control-title">智能浇灌</p>
-                    <p class="control-subtitle" id="pump-summary">
-                      当前为自动监测模式
-                    </p>
-                  </div>
-                  <button
-                    class="toggle-switch active"
-                    id="auto-toggle"
-                    type="button"
-                    aria-pressed="true"
-                  >
-                    <span class="switch-thumb"></span>
+                <div class="rename-controls">
+                  <input
+                    class="name-input"
+                    id="plant-name-input"
+                    type="text"
+                    maxlength="8"
+                    value="绿萝宝宝"
+                    placeholder="输入植物昵称"
+                  />
+                  <button class="save-name-button" id="save-name" type="button">
+                    保存
                   </button>
                 </div>
+              </div>
 
-                <div class="status-strip">
-                  <span>水泵状态</span>
-                  <strong id="pump-status">off</strong>
+              <div class="metrics-panel soft-panel">
+                <div class="panel-head">
+                  <div>
+                    <h3>核心体征</h3>
+                    <p class="panel-subtitle" id="metrics-updated-at">更新于 09:41（北京时间）</p>
+                  </div>
+                  <button class="ghost-icon" id="refresh-metrics" type="button" aria-label="刷新">
+                    ↻
+                  </button>
+                </div>
+                <div class="metrics-grid" id="metrics-grid"></div>
+              </div>
+
+              <div class="watering-card soft-panel">
+                <div class="watering-main">
+                  <div class="avatar-wrap watering-avatar">
+                    <img src="headshot.png" alt="植物缩略头像" class="avatar" />
+                  </div>
+                  <div>
+                    <h3>智能浇灌</h3>
+                    <p class="control-subtitle">
+                      当前模式：<strong class="mode-inline" id="pump-summary">自动</strong>
+                    </p>
+                  </div>
                 </div>
 
-                <button class="water-button" id="manual-water" type="button">
-                  手动补水
+                <button
+                  class="toggle-switch active"
+                  id="auto-toggle"
+                  type="button"
+                  aria-pressed="true"
+                >
+                  <span class="switch-thumb"></span>
                 </button>
+              </div>
+
+              <div class="manual-card soft-panel">
+                <div class="manual-info">
+                  <div class="manual-icon">💧</div>
+                  <div>
+                    <h3>手动补水</h3>
+                    <p class="control-subtitle">可以手动控制水箱出水</p>
+                  </div>
+                </div>
+
+                <div class="manual-actions">
+                  <div class="status-badge" id="pump-status">off</div>
+                  <button class="water-button" id="manual-water" type="button">
+                    手动补水
+                  </button>
+                </div>
               </div>
             </section>
 
             <section class="screen" data-screen="trend">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">History</p>
-                  <h3>历史趋势</h3>
-                </div>
-                <div class="range-switch" id="range-switch">
-                  <button class="range-button active" data-range="today">
-                    今日
-                  </button>
-                  <button class="range-button" data-range="week">本周</button>
-                  <button class="range-button" data-range="month">本月</button>
-                </div>
+              <div class="trend-topbar">
+                <button class="ghost-icon large" type="button" aria-label="返回">←</button>
+                <h2>历史趋势</h2>
+                <button class="ghost-icon large" type="button" aria-label="日历">🗓</button>
+              </div>
+
+              <div class="range-switch" id="range-switch">
+                <button class="range-button active" data-range="today" type="button">
+                  今日
+                </button>
+                <button class="range-button" data-range="week" type="button">
+                  本周
+                </button>
+                <button class="range-button" data-range="month" type="button">
+                  本月
+                </button>
               </div>
 
               <div class="chart-card soft-panel">
-                <div class="chart-header">
+                <div class="panel-head">
                   <div>
-                    <p class="eyebrow">环境趋势图</p>
-                    <h4 id="chart-title">今日波动</h4>
+                    <h3>环境趋势</h3>
+                    <p class="panel-subtitle" id="chart-title">今日波动</p>
                   </div>
-                  <span class="normalized-label">归一化趋势</span>
                 </div>
+
                 <div class="chart-legend">
-                  <span><i class="legend-dot soil"></i>土壤湿度</span>
-                  <span><i class="legend-dot humidity"></i>空气湿度</span>
-                  <span><i class="legend-dot light"></i>光照</span>
+                  <span><i class="legend-dot soil"></i>土壤湿度(%)</span>
+                  <span><i class="legend-dot humidity"></i>空气湿度(%)</span>
+                  <span><i class="legend-dot temp"></i>温度(°C)</span>
+                  <span><i class="legend-dot light"></i>光照(Lux)</span>
                 </div>
+
                 <svg
                   class="trend-chart"
                   id="trend-chart"
@@ -130,15 +196,37 @@
               </div>
 
               <div class="calendar-card soft-panel">
-                <div class="chart-header">
-                  <div>
-                    <p class="eyebrow">Event Calendar</p>
-                    <h4>事件日历</h4>
+                <div class="panel-head calendar-head">
+                  <h3>事件日历</h3>
+                  <div class="calendar-legend">
+                    <span><i class="legend-tag manual"></i>手动浇水</span>
+                    <span><i class="legend-tag auto"></i>自动补水</span>
                   </div>
-                  <span class="month-pill">2026.07</span>
                 </div>
+
+                <div class="month-row">
+                  <button class="ghost-icon" id="calendar-prev" type="button" aria-label="上一月">
+                    ‹
+                  </button>
+                  <strong id="calendar-month-label">2026年7月</strong>
+                  <button class="ghost-icon" id="calendar-next" type="button" aria-label="下一月">
+                    ›
+                  </button>
+                </div>
+
                 <div class="calendar-grid" id="calendar-grid"></div>
-                <div class="event-list" id="event-list"></div>
+                <div class="event-highlight" id="event-highlight"></div>
+                <div class="event-list-wrap">
+                  <div class="event-list" id="event-list"></div>
+                  <button
+                    class="event-list-toggle hidden"
+                    id="event-list-toggle"
+                    type="button"
+                    aria-expanded="false"
+                  >
+                    展开全部记录
+                  </button>
+                </div>
               </div>
             </section>
 
@@ -146,16 +234,20 @@
               <div class="section-head">
                 <div>
                   <p class="eyebrow">Care Guide</p>
-                  <h3>养护指南</h3>
+                  <h2>养护指南</h2>
                 </div>
+                <span class="month-pill">AI Ready</span>
               </div>
 
-              <div class="guide-card soft-panel">
-                <p class="eyebrow">AI 建议预览</p>
-                <h4>今日养护建议</h4>
-                <p class="guide-text" id="guide-output">
-                  绿萝宝宝状态平稳，建议继续保持 25°C 左右环境，并在傍晚检查土壤湿度是否低于 35%。
-                </p>
+              <div class="guide-hero soft-panel">
+                <div class="guide-hero-copy">
+                  <p class="eyebrow">AI 建议预览</p>
+                  <h3>今日养护建议</h3>
+                  <p class="guide-text" id="guide-output">
+                    <span data-plant-name>绿萝宝宝</span>
+                    状态平稳，建议继续保持 25°C 左右环境，并在傍晚检查土壤湿度是否低于 35%。
+                  </p>
+                </div>
                 <button class="guide-button" id="simulate-ai" type="button">
                   模拟生成 AI 建议
                 </button>
@@ -163,7 +255,7 @@
 
               <div class="api-card soft-panel">
                 <p class="eyebrow">API Placeholder</p>
-                <h4>预留 AI 接口</h4>
+                <h3>预留 AI 接口</h3>
                 <pre class="api-snippet"><code>POST /api/ai/care-guide
 Content-Type: application/json
 
@@ -186,15 +278,15 @@ Content-Type: application/json
 
           <nav class="tabbar" aria-label="底部导航">
             <button class="tab-button active" data-target="home" type="button">
-              <span class="tab-icon"></span>
+              <span class="tab-icon">⌂</span>
               首页
             </button>
             <button class="tab-button" data-target="trend" type="button">
-              <span class="tab-icon"></span>
+              <span class="tab-icon">⌁</span>
               趋势
             </button>
             <button class="tab-button" data-target="guide" type="button">
-              <span class="tab-icon"></span>
+              <span class="tab-icon">✦</span>
               指南
             </button>
           </nav>
