@@ -1,0 +1,152 @@
+.hero-card,
+.comfort-card,
+.metric-card,
+.controls-card,
+.chart-card,
+.calendar-card,
+.guide-card,
+.api-card,
+.tabbar {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::after,
+.comfort-card::after,
+.chart-card::after,
+.calendar-card::after,
+.guide-card::after,
+.api-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -24px -48px auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 36px;
+  background: radial-gradient(circle, rgba(132, 193, 118, 0.16), transparent 70%);
+  pointer-events: none;
+}
+
+.hero-card,
+.comfort-card,
+.chart-card,
+.calendar-card,
+.guide-card,
+.api-card {
+  animation: rise-in 0.7s ease both;
+}
+
+.metric-card {
+  animation: rise-in 0.75s ease both;
+}
+
+.metric-card:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.metric-card:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.metric-card:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+.metric-card:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+.metric-card:nth-child(6) {
+  animation-delay: 0.25s;
+}
+
+.tab-button,
+.range-button,
+.water-button,
+.guide-button,
+.enter-button,
+.toggle-switch {
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease,
+    color 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.tab-button:active,
+.range-button:active,
+.water-button:active,
+.guide-button:active,
+.enter-button:active,
+.toggle-switch:active {
+  transform: scale(0.97);
+}
+
+.water-button.is-busy {
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+.guide-button.is-loading::after {
+  content: " ...";
+}
+
+.trend-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.trend-line.soil {
+  stroke: #5ea668;
+}
+
+.trend-line.humidity {
+  stroke: #7fbea1;
+}
+
+.trend-line.light {
+  stroke: #e2b968;
+}
+
+.chart-grid-line {
+  stroke: rgba(91, 124, 91, 0.12);
+  stroke-width: 1;
+}
+
+.chart-dot {
+  stroke: rgba(255, 255, 255, 0.88);
+  stroke-width: 2;
+}
+
+.chart-dot.soil {
+  fill: #5ea668;
+}
+
+.chart-dot.humidity {
+  fill: #7fbea1;
+}
+
+.chart-dot.light {
+  fill: #e2b968;
+}
+
+.chart-label {
+  fill: #6e8a72;
+  font-size: 10px;
+  font-family: "SF Pro Rounded", "Avenir Next", sans-serif;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
