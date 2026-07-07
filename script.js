@@ -188,6 +188,7 @@ const manualWaterButton = document.querySelector("#manual-water");
 const manualWaterCopy = document.querySelector("#manual-water-copy");
 const fanStatus = document.querySelector("#fan-status");
 const manualFanButton = document.querySelector("#manual-fan");
+const manualFanCopy = document.querySelector("#manual-fan-copy");
 const mqttStatusBadge = document.querySelector("#mqtt-status-badge");
 const refreshMetricsButton = document.querySelector("#refresh-metrics");
 const metricsUpdatedAt = document.querySelector("#metrics-updated-at");
@@ -208,12 +209,12 @@ const simulateAiButton = document.querySelector("#simulate-ai");
 const guideOutput = document.querySelector("#guide-output");
 const plantSpeciesInput = document.querySelector("#plant-species-input");
 const savePlantSpeciesButton = document.querySelector("#save-plant-species");
-const aiApiSnippet = document.querySelector("#ai-api-snippet");
-const cameraFeedInput = document.querySelector("#camera-feed-input");
-const applyCameraFeedButton = document.querySelector("#apply-camera-feed");
-const cameraFeed = document.querySelector("#camera-feed");
-const cameraEmpty = document.querySelector("#camera-empty");
-const cameraFeedState = document.querySelector("#camera-feed-state");
+const aiChatLog = document.querySelector("#ai-chat-log");
+const aiChatIntro = document.querySelector("#ai-chat-intro");
+const aiChatInput = document.querySelector("#ai-chat-input");
+const sendAiButton = document.querySelector("#send-ai");
+const aiBackendHint = document.querySelector("#ai-backend-hint");
+const cameraEndpointCopy = document.querySelector("#camera-endpoint-copy");
 
 let splashDismissed = false;
 let currentMode = deviceData.mode;
@@ -229,13 +230,15 @@ let currentCalendarMonth = new Date(
 );
 let selectedCalendarDate = new Date(calendarStartDate);
 let isEventListExpanded = false;
-let currentCameraFeedUrl = "";
+let currentCameraFeedUrl = "/api/camera/stream";
 
 const mqttBridgeState = {
   fetchLatestTelemetry: null,
   fetchLatestTrendData: null,
   fetchLatestCalendarEvents: null,
 };
+
+const AI_API_URL = "http://127.0.0.1:5000/api/ai";
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -432,22 +435,20 @@ function renderGuideText() {
   );
 }
 
-function renderAiApiSnippet() {
-  aiApiSnippet.textContent = `POST /api/ai/care-guide
-Content-Type: application/json
+function renderAiChatIntro() {
+  if (!aiChatIntro) {
+    return;
+  }
 
-{
-  "device_id": "${deviceData.device_id}",
-  "plant_name": "${currentPlantName}",
-  "plant_species": "${currentPlantSpecies}",
-  "soil_moisture": ${deviceData.soil_moisture},
-  "air_humidity": ${deviceData.air_humidity},
-  "temperature": ${deviceData.temperature},
-  "light": ${deviceData.light},
-  "water_level": ${deviceData.water_level},
-  "air_quality": ${deviceData.air_quality},
-  "mode": "${currentMode}"
-}`;
+  aiChatIntro.textContent = `你好，我是 ${currentPlantName} 的养护助手。当前植物种类已设置为${currentPlantSpecies}，你可以直接问我浇水、光照、温湿度或通风建议。`;
+}
+
+function renderCameraEndpointCopy() {
+  if (!cameraEndpointCopy) {
+    return;
+  }
+
+  cameraEndpointCopy.innerHTML = `默认预留流接口：<code>${currentCameraFeedUrl}</code>，默认预留抓拍接口：<code>/api/camera/snapshot</code>。`;
 }
 
 function updatePlantNameUI() {
@@ -457,28 +458,13 @@ function updatePlantNameUI() {
 
   plantNameInput.value = currentPlantName;
   renderGuideText();
-  renderAiApiSnippet();
+  renderAiChatIntro();
 }
 
 function updatePlantSpeciesUI() {
   plantSpeciesInput.value = currentPlantSpecies;
   renderGuideText();
-  renderAiApiSnippet();
-}
-
-function updateCameraFeedUI() {
-  const hasCameraFeed = Boolean(currentCameraFeedUrl);
-
-  cameraFeed.classList.toggle("hidden", !hasCameraFeed);
-  cameraEmpty.classList.toggle("hidden", hasCameraFeed);
-  cameraFeedState.textContent = hasCameraFeed ? "已接入" : "待接入";
-  cameraFeedState.classList.toggle("is-live", hasCameraFeed);
-
-  if (hasCameraFeed) {
-    cameraFeed.src = currentCameraFeedUrl;
-  } else {
-    cameraFeed.removeAttribute("src");
-  }
+  renderAiChatIntro();
 }
 
 function updateModeUI() {
@@ -493,12 +479,14 @@ function updateModeUI() {
   autoToggle.setAttribute("aria-pressed", String(isAuto));
   manualWaterButton.disabled = isAuto || isPumpBusy;
   manualWaterButton.classList.toggle("is-disabled", isAuto || isPumpBusy);
-  manualFanButton.disabled = isFanBusy;
-  manualFanButton.classList.toggle("is-disabled", isFanBusy);
+  manualFanButton.disabled = isAuto || isFanBusy;
+  manualFanButton.classList.toggle("is-disabled", isAuto || isFanBusy);
   manualWaterCopy.textContent = isAuto
-    ? "自动浇灌开启时，手动补水已锁定"
+    ? "智能控制开启时，手动补水已锁定"
     : "可以手动控制水箱出水";
-  renderAiApiSnippet();
+  manualFanCopy.textContent = isAuto
+    ? "智能控制开启时，手动风扇已锁定"
+    : "可以手动控制风扇运转";
 }
 
 function switchScreen(target) {
@@ -810,7 +798,7 @@ function renderCalendar() {
 }
 
 function hideSplash() {
-  if (splashDismissed) {
+  if (splashDismissed || !splashScreen) {
     return;
   }
 
@@ -856,10 +844,10 @@ function savePlantSpecies() {
 
 function applyCameraFeed(url, options = {}) {
   currentCameraFeedUrl = url.trim();
-  updateCameraFeedUI();
+  renderCameraEndpointCopy();
 
   if (options.showFeedback) {
-    showToast(currentCameraFeedUrl ? "摄像头画面接口已更新" : "已清空摄像头接口");
+    showToast(currentCameraFeedUrl ? "摄像头接口已更新" : "已清空摄像头接口");
   }
 }
 
@@ -895,7 +883,91 @@ function applyTelemetryUpdate(partialTelemetry = {}, options = {}) {
   updateProfileDays();
   updateUpdatedAtLabel();
   renderCalendar();
-  renderAiApiSnippet();
+}
+
+function createAiBubble(role, text) {
+  const bubble = document.createElement("div");
+  bubble.className = `ai-bubble ${role}`;
+  bubble.textContent = text;
+  return bubble;
+}
+
+function appendAiMessage(role, text) {
+  if (!aiChatLog) {
+    return;
+  }
+
+  const bubble = createAiBubble(role, text);
+  aiChatLog.appendChild(bubble);
+  aiChatLog.scrollTop = aiChatLog.scrollHeight;
+}
+
+function buildAiPayload(message) {
+  return {
+    message,
+    plant_name: currentPlantName,
+    plant_species: currentPlantSpecies,
+    sensor_data: {
+      device_id: deviceData.device_id,
+      soil_moisture: deviceData.soil_moisture,
+      air_humidity: deviceData.air_humidity,
+      temperature: deviceData.temperature,
+      light: deviceData.light,
+      water_level: deviceData.water_level,
+      air_quality: deviceData.air_quality,
+      mode: currentMode,
+      pump_status: deviceData.pump_status,
+      fan_status: deviceData.fan_status,
+    },
+  };
+}
+
+async function requestAiReply(message) {
+  const response = await fetch(AI_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(buildAiPayload(message)),
+  });
+
+  if (!response.ok) {
+    throw new Error(`AI request failed with status ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.reply || "后端已响应，但暂时没有返回建议内容。";
+}
+
+async function handleAiSend() {
+  const message = aiChatInput.value.trim();
+
+  if (!message) {
+    aiChatInput.focus();
+    return;
+  }
+
+  appendAiMessage("user", message);
+  aiChatInput.value = "";
+  sendAiButton.disabled = true;
+  sendAiButton.textContent = "思考中...";
+  aiBackendHint.textContent = "正在调用 Flask 后端 /api/ai ...";
+
+  try {
+    const reply = await requestAiReply(message);
+    appendAiMessage("assistant", reply);
+    aiBackendHint.textContent = "已连接 Flask 智能对话接口 `POST /api/ai`。";
+  } catch (error) {
+    console.warn("[GreenMoodAI] request failed:", error);
+    appendAiMessage(
+      "assistant",
+      "当前 Flask 智能对话接口暂时不可用，请先启动 app.py 后端服务。"
+    );
+    aiBackendHint.textContent = "当前未成功连接 Flask 后端，请确认本地 5000 端口服务已启动。";
+  } finally {
+    sendAiButton.disabled = false;
+    sendAiButton.textContent = "发送问题";
+  }
 }
 
 function applyTrendUpdate(partialTrendData = {}) {
@@ -1031,7 +1103,9 @@ window.GreenMoodBridge = {
 };
 
 function bindEvents() {
-  enterAppButton.addEventListener("click", hideSplash);
+  if (enterAppButton) {
+    enterAppButton.addEventListener("click", hideSplash);
+  }
   window.setInterval(updateProfileDays, 60000);
 
   editNameToggle.addEventListener("click", () => {
@@ -1130,6 +1204,11 @@ function bindEvents() {
   });
 
   manualFanButton.addEventListener("click", () => {
+    if (currentMode === "auto") {
+      showToast("请先关闭智能控制，再启动手动风扇");
+      return;
+    }
+
     manualFanButton.classList.add("is-busy");
     manualFanButton.textContent = "启动中...";
     deviceData.fan_status = "on";
@@ -1211,14 +1290,15 @@ function bindEvents() {
     }, 700);
   });
 
-  applyCameraFeedButton.addEventListener("click", () => {
-    applyCameraFeed(cameraFeedInput.value, { showFeedback: true });
+  sendAiButton.addEventListener("click", () => {
+    handleAiSend();
   });
 
-  cameraFeed.addEventListener("error", () => {
-    currentCameraFeedUrl = "";
-    updateCameraFeedUI();
-    showToast("摄像头流暂时不可用");
+  aiChatInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleAiSend();
+    }
   });
 }
 
@@ -1232,7 +1312,7 @@ function init() {
   updatePlantNameUI();
   updatePlantSpeciesUI();
   updateModeUI();
-  updateCameraFeedUI();
+  renderCameraEndpointCopy();
   renderChart(currentRange);
   renderCalendar();
   bindEvents();

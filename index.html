@@ -149,7 +149,7 @@
                     <img src="headshot.png" alt="植物缩略头像" class="avatar" />
                   </div>
                   <div>
-                    <h3>智能浇灌</h3>
+                    <h3>智能控制</h3>
                     <p class="control-subtitle">
                       当前模式：<strong class="mode-inline" id="pump-summary">自动</strong>
                     </p>
@@ -188,7 +188,7 @@
                   <div class="manual-icon">🌀</div>
                   <div>
                     <h3>手动风扇</h3>
-                    <p class="control-subtitle">可以手动控制风扇运转</p>
+                    <p class="control-subtitle" id="manual-fan-copy">可以手动控制风扇运转</p>
                   </div>
                 </div>
 
@@ -197,41 +197,6 @@
                   <button class="water-button" id="manual-fan" type="button">
                     启动风扇
                   </button>
-                </div>
-              </div>
-
-              <div class="camera-card soft-panel">
-                <div class="camera-card-head">
-                  <div>
-                    <p class="eyebrow">Flask Placeholder</p>
-                    <h3>实时摄像头画面</h3>
-                  </div>
-                  <span class="camera-pill" id="camera-feed-state">待接入</span>
-                </div>
-                <div class="camera-preview" id="camera-preview">
-                  <img
-                    class="camera-feed hidden"
-                    id="camera-feed"
-                    alt="摄像头实时画面"
-                  />
-                  <div class="camera-empty" id="camera-empty">
-                    等待 Flask 摄像头流接入
-                  </div>
-                </div>
-                <div class="camera-controls">
-                  <input
-                    class="name-input camera-input"
-                    id="camera-feed-input"
-                    type="text"
-                    value="http://127.0.0.1:5000/video_feed"
-                    placeholder="输入 Flask 视频流地址"
-                  />
-                  <button class="save-name-button" id="apply-camera-feed" type="button">
-                    接入画面
-                  </button>
-                </div>
-                <div class="api-footer">
-                  <span>预留 Flask 视频流接口，后续可直接显示 MJPEG 或单帧抓拍画面。</span>
                 </div>
               </div>
             </section>
@@ -331,7 +296,7 @@
                     状态平稳，建议继续保持 25°C 左右环境，并在傍晚检查土壤湿度是否低于 35%。
                   </p>
                 </div>
-                <button class="guide-button" id="simulate-ai" type="button">
+                <button class="guide-button guide-button-compact" id="simulate-ai" type="button">
                   模拟生成 AI 建议
                 </button>
                 <div class="guide-species">
@@ -358,25 +323,70 @@
               </div>
 
               <div class="api-card soft-panel">
-                <p class="eyebrow">API Placeholder</p>
-                <h3>预留 AI 接口</h3>
-                <pre class="api-snippet"><code id="ai-api-snippet">POST /api/ai/care-guide
-Content-Type: application/json
-
-{
-  "device_id": "GreenMood001",
-  "plant_name": "绿萝宝宝",
-  "plant_species": "绿萝",
-  "soil_moisture": 36,
-  "air_humidity": 58,
-  "temperature": 25.4,
-  "light": 820,
-  "water_level": 72,
-  "air_quality": 430,
-  "mode": "auto"
-}</code></pre>
+                <p class="eyebrow">AI Assistant</p>
+                <h3>智能对话</h3>
+                <div class="ai-chat-log" id="ai-chat-log">
+                  <div class="ai-bubble assistant" id="ai-chat-intro">
+                    你好，我是 Green Mood 的养护助手。你可以直接问我浇水、光照、温湿度或通风建议。
+                  </div>
+                </div>
+                <div class="ai-composer">
+                  <textarea
+                    class="ai-textarea"
+                    id="ai-chat-input"
+                    rows="3"
+                    placeholder="例如：今天需要补水吗？绿萝晚上要不要开风扇？"
+                  ></textarea>
+                  <button class="save-name-button ai-send-button" id="send-ai" type="button">
+                    发送问题
+                  </button>
+                </div>
                 <div class="api-footer">
-                  <span>前端已预留调用入口，后续可直接接入真实 AI 服务。</span>
+                  <span id="ai-backend-hint">当前对话将调用 Flask 后端 `POST /api/ai`。</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="screen" data-screen="camera">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Camera Service</p>
+                  <h2>摄像头服务</h2>
+                </div>
+                <span class="month-pill">Backend Ready</span>
+              </div>
+
+              <div class="camera-card soft-panel camera-page-card">
+                <div class="camera-card-head">
+                  <div>
+                    <p class="eyebrow">Flask Placeholder</p>
+                    <h3>实时摄像头画面</h3>
+                  </div>
+                  <span class="camera-pill">后端预留</span>
+                </div>
+                <div class="camera-preview camera-preview-placeholder">
+                  <div class="camera-empty">
+                    当前页面只展示后端接口预留，不直接在网页端接入摄像头画面。
+                  </div>
+                </div>
+                <div class="camera-endpoints">
+                  <div class="camera-endpoint-item">
+                    <strong>GET /api/camera/status</strong>
+                    <span>读取摄像头服务状态与当前配置</span>
+                  </div>
+                  <div class="camera-endpoint-item">
+                    <strong>GET /api/camera/config</strong>
+                    <span>获取后端预留的流地址、抓拍地址与服务说明</span>
+                  </div>
+                  <div class="camera-endpoint-item">
+                    <strong>POST /api/camera/config</strong>
+                    <span>更新流地址、抓拍地址或运行状态，供后续 Flask 服务接入</span>
+                  </div>
+                </div>
+                <div class="api-footer">
+                  <span id="camera-endpoint-copy">
+                    默认预留流接口：<code>/api/camera/stream</code>，默认预留抓拍接口：<code>/api/camera/snapshot</code>。
+                  </span>
                 </div>
               </div>
             </section>
@@ -394,6 +404,10 @@ Content-Type: application/json
             <button class="tab-button" data-target="guide" type="button">
               <span class="tab-icon">✦</span>
               指南
+            </button>
+            <button class="tab-button" data-target="camera" type="button">
+              <span class="tab-icon">◉</span>
+              镜头
             </button>
           </nav>
         </div>
