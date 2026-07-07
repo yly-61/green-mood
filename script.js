@@ -7,6 +7,7 @@ const deviceData = {
   water_level: 72,
   air_quality: 430,
   pump_status: "off",
+  fan_status: "off",
   mode: "auto",
 };
 
@@ -150,20 +151,6 @@ const calendarEvents = [
     title: "自动补水",
     detail: "自动补水 120ml",
   },
-  {
-    date: "2026-07-27",
-    time: "09:45",
-    type: "auto",
-    title: "自动补水",
-    detail: "自动补水 110ml",
-  },
-  {
-    date: "2026-08-03",
-    time: "11:10",
-    type: "manual",
-    title: "手动浇水",
-    detail: "手动补水 85ml",
-  },
 ];
 
 const suggestionTemplates = [
@@ -173,6 +160,12 @@ const suggestionTemplates = [
     `${name}今天的空气湿度表现不错，晚间只需观察叶片状态，不建议额外喷雾。`,
   (name) =>
     `${name}的光照处于舒适区，明早若土壤湿度继续下降，可执行一次短时补水。`,
+  (name, species) =>
+    `${name}目前按照${species}的养护节奏来看，环境偏稳，今天更适合继续观察而不是频繁调整。`,
+  (name, species) =>
+    `${species}对通风较敏感，建议在午后短时开启风扇，帮助${name}周围空气流动，但避免长时间直吹叶片。`,
+  (name, species) =>
+    `${name}的储备水量还算充足，${species}今天优先关注叶片挺立状态和盆土表层干湿变化即可。`,
 ];
 
 const splashScreen = document.querySelector("#splash-screen");
@@ -192,6 +185,9 @@ const pumpStatus = document.querySelector("#pump-status");
 const pumpSummary = document.querySelector("#pump-summary");
 const autoToggle = document.querySelector("#auto-toggle");
 const manualWaterButton = document.querySelector("#manual-water");
+const manualWaterCopy = document.querySelector("#manual-water-copy");
+const fanStatus = document.querySelector("#fan-status");
+const manualFanButton = document.querySelector("#manual-fan");
 const mqttStatusBadge = document.querySelector("#mqtt-status-badge");
 const refreshMetricsButton = document.querySelector("#refresh-metrics");
 const metricsUpdatedAt = document.querySelector("#metrics-updated-at");
@@ -210,11 +206,20 @@ const calendarNextButton = document.querySelector("#calendar-next");
 const calendarMonthLabel = document.querySelector("#calendar-month-label");
 const simulateAiButton = document.querySelector("#simulate-ai");
 const guideOutput = document.querySelector("#guide-output");
+const plantSpeciesInput = document.querySelector("#plant-species-input");
+const savePlantSpeciesButton = document.querySelector("#save-plant-species");
+const aiApiSnippet = document.querySelector("#ai-api-snippet");
+const cameraFeedInput = document.querySelector("#camera-feed-input");
+const applyCameraFeedButton = document.querySelector("#apply-camera-feed");
+const cameraFeed = document.querySelector("#camera-feed");
+const cameraEmpty = document.querySelector("#camera-empty");
+const cameraFeedState = document.querySelector("#camera-feed-state");
 
 let splashDismissed = false;
 let currentMode = deviceData.mode;
 let currentRange = "today";
 let currentPlantName = "绿萝宝宝";
+let currentPlantSpecies = "绿萝";
 let currentSuggestionIndex = 0;
 let lastUpdatedAt = new Date();
 let currentCalendarMonth = new Date(
@@ -224,6 +229,7 @@ let currentCalendarMonth = new Date(
 );
 let selectedCalendarDate = new Date(calendarStartDate);
 let isEventListExpanded = false;
+let currentCameraFeedUrl = "";
 
 const mqttBridgeState = {
   fetchLatestTelemetry: null,
@@ -420,7 +426,28 @@ function renderComfort() {
 }
 
 function renderGuideText() {
-  guideOutput.textContent = suggestionTemplates[currentSuggestionIndex](currentPlantName);
+  guideOutput.textContent = suggestionTemplates[currentSuggestionIndex](
+    currentPlantName,
+    currentPlantSpecies
+  );
+}
+
+function renderAiApiSnippet() {
+  aiApiSnippet.textContent = `POST /api/ai/care-guide
+Content-Type: application/json
+
+{
+  "device_id": "${deviceData.device_id}",
+  "plant_name": "${currentPlantName}",
+  "plant_species": "${currentPlantSpecies}",
+  "soil_moisture": ${deviceData.soil_moisture},
+  "air_humidity": ${deviceData.air_humidity},
+  "temperature": ${deviceData.temperature},
+  "light": ${deviceData.light},
+  "water_level": ${deviceData.water_level},
+  "air_quality": ${deviceData.air_quality},
+  "mode": "${currentMode}"
+}`;
 }
 
 function updatePlantNameUI() {
@@ -430,15 +457,48 @@ function updatePlantNameUI() {
 
   plantNameInput.value = currentPlantName;
   renderGuideText();
+  renderAiApiSnippet();
+}
+
+function updatePlantSpeciesUI() {
+  plantSpeciesInput.value = currentPlantSpecies;
+  renderGuideText();
+  renderAiApiSnippet();
+}
+
+function updateCameraFeedUI() {
+  const hasCameraFeed = Boolean(currentCameraFeedUrl);
+
+  cameraFeed.classList.toggle("hidden", !hasCameraFeed);
+  cameraEmpty.classList.toggle("hidden", hasCameraFeed);
+  cameraFeedState.textContent = hasCameraFeed ? "已接入" : "待接入";
+  cameraFeedState.classList.toggle("is-live", hasCameraFeed);
+
+  if (hasCameraFeed) {
+    cameraFeed.src = currentCameraFeedUrl;
+  } else {
+    cameraFeed.removeAttribute("src");
+  }
 }
 
 function updateModeUI() {
   const isAuto = currentMode === "auto";
+  const isPumpBusy = deviceData.pump_status === "on";
+  const isFanBusy = deviceData.fan_status === "on";
 
   pumpSummary.textContent = isAuto ? "自动" : "手动";
   pumpStatus.textContent = deviceData.pump_status;
+  fanStatus.textContent = deviceData.fan_status;
   autoToggle.classList.toggle("active", isAuto);
   autoToggle.setAttribute("aria-pressed", String(isAuto));
+  manualWaterButton.disabled = isAuto || isPumpBusy;
+  manualWaterButton.classList.toggle("is-disabled", isAuto || isPumpBusy);
+  manualFanButton.disabled = isFanBusy;
+  manualFanButton.classList.toggle("is-disabled", isFanBusy);
+  manualWaterCopy.textContent = isAuto
+    ? "自动浇灌开启时，手动补水已锁定"
+    : "可以手动控制水箱出水";
+  renderAiApiSnippet();
 }
 
 function switchScreen(target) {
@@ -781,8 +841,47 @@ function savePlantName() {
   showToast("植物名称已更新");
 }
 
+function savePlantSpecies() {
+  const nextSpecies = plantSpeciesInput.value.trim();
+
+  if (!nextSpecies) {
+    plantSpeciesInput.focus();
+    return;
+  }
+
+  currentPlantSpecies = nextSpecies;
+  updatePlantSpeciesUI();
+  showToast("植物种类已更新");
+}
+
+function applyCameraFeed(url, options = {}) {
+  currentCameraFeedUrl = url.trim();
+  updateCameraFeedUI();
+
+  if (options.showFeedback) {
+    showToast(currentCameraFeedUrl ? "摄像头画面接口已更新" : "已清空摄像头接口");
+  }
+}
+
+function publishControlSafely(payload) {
+  if (!window.GreenMoodMQTT || typeof window.GreenMoodMQTT.publishControl !== "function") {
+    return false;
+  }
+
+  try {
+    window.GreenMoodMQTT.publishControl(payload);
+    return true;
+  } catch (error) {
+    console.warn("[GreenMoodUI] Failed to publish control payload:", error);
+    return false;
+  }
+}
+
 function applyTelemetryUpdate(partialTelemetry = {}, options = {}) {
   Object.assign(deviceData, partialTelemetry);
+  if (typeof partialTelemetry.mode === "string" && partialTelemetry.mode.trim()) {
+    currentMode = partialTelemetry.mode.trim();
+  }
 
   if (options.updatedAt instanceof Date) {
     lastUpdatedAt = options.updatedAt;
@@ -796,6 +895,7 @@ function applyTelemetryUpdate(partialTelemetry = {}, options = {}) {
   updateProfileDays();
   updateUpdatedAtLabel();
   renderCalendar();
+  renderAiApiSnippet();
 }
 
 function applyTrendUpdate(partialTrendData = {}) {
@@ -903,6 +1003,17 @@ window.GreenMoodBridge = {
   setFetchLatestCalendarEvents(handler) {
     mqttBridgeState.fetchLatestCalendarEvents = handler;
   },
+  setPlantSpecies(nextSpecies) {
+    if (typeof nextSpecies === "string" && nextSpecies.trim()) {
+      currentPlantSpecies = nextSpecies.trim();
+      updatePlantSpeciesUI();
+    }
+  },
+  setCameraFeedUrl(nextUrl) {
+    if (typeof nextUrl === "string") {
+      applyCameraFeed(nextUrl);
+    }
+  },
   refresh() {
     return refreshDashboard();
   },
@@ -911,6 +1022,9 @@ window.GreenMoodBridge = {
       telemetry: { ...deviceData },
       trendData: JSON.parse(JSON.stringify(trendData)),
       calendarEvents: [...calendarEvents],
+      plantName: currentPlantName,
+      plantSpecies: currentPlantSpecies,
+      cameraFeedUrl: currentCameraFeedUrl,
       updatedAt: lastUpdatedAt.toISOString(),
     };
   },
@@ -918,7 +1032,6 @@ window.GreenMoodBridge = {
 
 function bindEvents() {
   enterAppButton.addEventListener("click", hideSplash);
-  window.setTimeout(hideSplash, 1800);
   window.setInterval(updateProfileDays, 60000);
 
   editNameToggle.addEventListener("click", () => {
@@ -934,6 +1047,13 @@ function bindEvents() {
   plantNameInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       savePlantName();
+    }
+  });
+
+  savePlantSpeciesButton.addEventListener("click", savePlantSpecies);
+  plantSpeciesInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      savePlantSpecies();
     }
   });
 
@@ -963,6 +1083,15 @@ function bindEvents() {
 
   autoToggle.addEventListener("click", () => {
     currentMode = currentMode === "auto" ? "manual" : "auto";
+    deviceData.mode = currentMode;
+    if (currentMode === "auto") {
+      deviceData.pump_status = "off";
+    }
+    publishControlSafely({
+      device_id: deviceData.device_id,
+      action: "set_mode",
+      mode: currentMode,
+    });
     updateModeUI();
   });
 
@@ -971,17 +1100,57 @@ function bindEvents() {
   });
 
   manualWaterButton.addEventListener("click", () => {
+    if (currentMode === "auto") {
+      showToast("请先关闭自动浇灌，再进行手动补水");
+      return;
+    }
+
     manualWaterButton.classList.add("is-busy");
     manualWaterButton.textContent = "发送中...";
     deviceData.pump_status = "on";
+    publishControlSafely({
+      device_id: deviceData.device_id,
+      action: "manual_water",
+      command: "start",
+    });
     updateModeUI();
 
     window.setTimeout(() => {
       manualWaterButton.classList.remove("is-busy");
       manualWaterButton.textContent = "手动补水";
       deviceData.pump_status = "off";
+      publishControlSafely({
+        device_id: deviceData.device_id,
+        action: "manual_water",
+        command: "stop",
+      });
       updateModeUI();
       showToast("已发送补水命令");
+    }, 850);
+  });
+
+  manualFanButton.addEventListener("click", () => {
+    manualFanButton.classList.add("is-busy");
+    manualFanButton.textContent = "启动中...";
+    deviceData.fan_status = "on";
+    publishControlSafely({
+      device_id: deviceData.device_id,
+      action: "manual_fan",
+      command: "start",
+    });
+    updateModeUI();
+
+    window.setTimeout(() => {
+      manualFanButton.classList.remove("is-busy");
+      manualFanButton.textContent = "启动风扇";
+      deviceData.fan_status = "off";
+      publishControlSafely({
+        device_id: deviceData.device_id,
+        action: "manual_fan",
+        command: "stop",
+      });
+      updateModeUI();
+      showToast("已发送风扇命令");
     }, 850);
   });
 
@@ -1041,6 +1210,16 @@ function bindEvents() {
       simulateAiButton.disabled = false;
     }, 700);
   });
+
+  applyCameraFeedButton.addEventListener("click", () => {
+    applyCameraFeed(cameraFeedInput.value, { showFeedback: true });
+  });
+
+  cameraFeed.addEventListener("error", () => {
+    currentCameraFeedUrl = "";
+    updateCameraFeedUI();
+    showToast("摄像头流暂时不可用");
+  });
 }
 
 function init() {
@@ -1051,7 +1230,9 @@ function init() {
   renderMetrics();
   renderComfort();
   updatePlantNameUI();
+  updatePlantSpeciesUI();
   updateModeUI();
+  updateCameraFeedUI();
   renderChart(currentRange);
   renderCalendar();
   bindEvents();

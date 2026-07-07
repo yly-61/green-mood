@@ -171,7 +171,7 @@
                   <div class="manual-icon">💧</div>
                   <div>
                     <h3>手动补水</h3>
-                    <p class="control-subtitle">可以手动控制水箱出水</p>
+                    <p class="control-subtitle" id="manual-water-copy">可以手动控制水箱出水</p>
                   </div>
                 </div>
 
@@ -180,6 +180,58 @@
                   <button class="water-button" id="manual-water" type="button">
                     手动补水
                   </button>
+                </div>
+              </div>
+
+              <div class="manual-card soft-panel">
+                <div class="manual-info">
+                  <div class="manual-icon">🌀</div>
+                  <div>
+                    <h3>手动风扇</h3>
+                    <p class="control-subtitle">可以手动控制风扇运转</p>
+                  </div>
+                </div>
+
+                <div class="manual-actions">
+                  <div class="status-badge" id="fan-status">off</div>
+                  <button class="water-button" id="manual-fan" type="button">
+                    启动风扇
+                  </button>
+                </div>
+              </div>
+
+              <div class="camera-card soft-panel">
+                <div class="camera-card-head">
+                  <div>
+                    <p class="eyebrow">Flask Placeholder</p>
+                    <h3>实时摄像头画面</h3>
+                  </div>
+                  <span class="camera-pill" id="camera-feed-state">待接入</span>
+                </div>
+                <div class="camera-preview" id="camera-preview">
+                  <img
+                    class="camera-feed hidden"
+                    id="camera-feed"
+                    alt="摄像头实时画面"
+                  />
+                  <div class="camera-empty" id="camera-empty">
+                    等待 Flask 摄像头流接入
+                  </div>
+                </div>
+                <div class="camera-controls">
+                  <input
+                    class="name-input camera-input"
+                    id="camera-feed-input"
+                    type="text"
+                    value="http://127.0.0.1:5000/video_feed"
+                    placeholder="输入 Flask 视频流地址"
+                  />
+                  <button class="save-name-button" id="apply-camera-feed" type="button">
+                    接入画面
+                  </button>
+                </div>
+                <div class="api-footer">
+                  <span>预留 Flask 视频流接口，后续可直接显示 MJPEG 或单帧抓拍画面。</span>
                 </div>
               </div>
             </section>
@@ -282,16 +334,39 @@
                 <button class="guide-button" id="simulate-ai" type="button">
                   模拟生成 AI 建议
                 </button>
+                <div class="guide-species">
+                  <div class="guide-species-copy">
+                    <p class="eyebrow">植物种类设置</p>
+                    <p class="guide-species-text">
+                      当前植物种类会作为后续 AI 养护建议的重要参考。
+                    </p>
+                  </div>
+                  <div class="guide-species-controls">
+                    <input
+                      class="name-input species-input"
+                      id="plant-species-input"
+                      type="text"
+                      maxlength="12"
+                      value="绿萝"
+                      placeholder="输入植物种类"
+                    />
+                    <button class="save-name-button" id="save-plant-species" type="button">
+                      保存种类
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div class="api-card soft-panel">
                 <p class="eyebrow">API Placeholder</p>
                 <h3>预留 AI 接口</h3>
-                <pre class="api-snippet"><code>POST /api/ai/care-guide
+                <pre class="api-snippet"><code id="ai-api-snippet">POST /api/ai/care-guide
 Content-Type: application/json
 
 {
   "device_id": "GreenMood001",
+  "plant_name": "绿萝宝宝",
+  "plant_species": "绿萝",
   "soil_moisture": 36,
   "air_humidity": 58,
   "temperature": 25.4,
