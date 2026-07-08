@@ -8,10 +8,10 @@
   --line: rgba(88, 135, 78, 0.12);
   --text: #20281f;
   --muted: #7a8377;
-  --accent: #39bf51;
-  --accent-strong: #2a9f43;
-  --accent-soft: #e4f7df;
-  --accent-pale: #f3fbef;
+  --accent: #30b24a;
+  --accent-strong: #1e8f39;
+  --accent-soft: #dcf2d7;
+  --accent-pale: #eef9ea;
   --blue: #4b93ff;
   --orange: #f4a100;
   --yellow: #f3c61a;
@@ -295,6 +295,14 @@ button {
   min-width: 118px;
 }
 
+.comfort-accent-glow {
+  position: absolute;
+  inset: 44px 8px 18px;
+  border-radius: 28px;
+  background: radial-gradient(circle at 50% 0%, rgba(48, 178, 74, 0.08), transparent 72%);
+  pointer-events: none;
+}
+
 .comfort-head {
   display: flex;
   align-items: center;
@@ -310,7 +318,7 @@ button {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #edf4ea;
+  background: #e8f1e4;
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
@@ -343,8 +351,9 @@ button {
 }
 
 .face-chip.active {
-  background: #dff7d7;
+  background: #d3f0ca;
   color: var(--accent-strong);
+  box-shadow: inset 0 0 0 1px rgba(30, 143, 57, 0.12);
 }
 
 .comfort-note {
@@ -352,6 +361,7 @@ button {
   color: var(--accent-strong);
   font-size: 14px;
   font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .comfort-tip-card {
@@ -396,6 +406,45 @@ button {
 
 .hidden {
   display: none;
+}
+
+.alert-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(247, 250, 243, 0.52);
+  backdrop-filter: blur(10px);
+}
+
+.alert-overlay.hidden {
+  display: none;
+}
+
+.alert-card {
+  width: min(100%, 288px);
+  padding: 18px 18px 16px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(223, 243, 197, 0.44), transparent 26%),
+    rgba(255, 255, 255, 0.98);
+}
+
+.alert-card h3 {
+  margin: 0;
+}
+
+.alert-copy {
+  margin: 10px 0 16px;
+  color: #667066;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.alert-button {
+  width: 100%;
 }
 
 .rename-controls {

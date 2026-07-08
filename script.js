@@ -215,6 +215,9 @@ const aiChatInput = document.querySelector("#ai-chat-input");
 const sendAiButton = document.querySelector("#send-ai");
 const aiBackendHint = document.querySelector("#ai-backend-hint");
 const cameraEndpointCopy = document.querySelector("#camera-endpoint-copy");
+const waterAlertOverlay = document.querySelector("#water-alert-overlay");
+const waterAlertCopy = document.querySelector("#water-alert-copy");
+const waterAlertConfirmButton = document.querySelector("#water-alert-confirm");
 
 let splashDismissed = false;
 let currentMode = deviceData.mode;
@@ -231,6 +234,9 @@ let currentCalendarMonth = new Date(
 let selectedCalendarDate = new Date(calendarStartDate);
 let isEventListExpanded = false;
 let currentCameraFeedUrl = "/api/camera/stream";
+let hasAcknowledgedLowWaterAlert = false;
+let isWaterAlertVisible = false;
+let wasWaterLevelLow = deviceData.water_level < 20;
 
 const mqttBridgeState = {
   fetchLatestTelemetry: null,
@@ -435,6 +441,14 @@ function renderGuideText() {
   );
 }
 
+function updateAiBackendHint(text = "当前对话调用deepseek提供的大模型") {
+  if (!aiBackendHint) {
+    return;
+  }
+
+  aiBackendHint.textContent = text;
+}
+
 function renderAiChatIntro() {
   if (!aiChatIntro) {
     return;
@@ -487,6 +501,33 @@ function updateModeUI() {
   manualFanCopy.textContent = isAuto
     ? "智能控制开启时，手动风扇已锁定"
     : "可以手动控制风扇运转";
+}
+
+function updateLowWaterAlertVisibility(isVisible) {
+  if (!waterAlertOverlay) {
+    return;
+  }
+
+  isWaterAlertVisible = isVisible;
+  waterAlertOverlay.classList.toggle("hidden", !isVisible);
+}
+
+function evaluateLowWaterAlert() {
+  const isWaterLevelLow = deviceData.water_level < 20;
+
+  if (!isWaterLevelLow) {
+    hasAcknowledgedLowWaterAlert = false;
+    wasWaterLevelLow = false;
+    updateLowWaterAlertVisibility(false);
+    return;
+  }
+
+  if (!wasWaterLevelLow && !hasAcknowledgedLowWaterAlert) {
+    waterAlertCopy.textContent = `当前储备水量已降到 ${deviceData.water_level}%，请尽快为水箱补水，避免影响自动控制。`;
+    updateLowWaterAlertVisibility(true);
+  }
+
+  wasWaterLevelLow = true;
 }
 
 function switchScreen(target) {
@@ -883,6 +924,7 @@ function applyTelemetryUpdate(partialTelemetry = {}, options = {}) {
   updateProfileDays();
   updateUpdatedAtLabel();
   renderCalendar();
+  evaluateLowWaterAlert();
 }
 
 function createAiBubble(role, text) {
@@ -951,19 +993,19 @@ async function handleAiSend() {
   aiChatInput.value = "";
   sendAiButton.disabled = true;
   sendAiButton.textContent = "思考中...";
-  aiBackendHint.textContent = "正在调用 Flask 后端 /api/ai ...";
+  updateAiBackendHint("正在调用deepseek提供的大模型...");
 
   try {
     const reply = await requestAiReply(message);
     appendAiMessage("assistant", reply);
-    aiBackendHint.textContent = "已连接 Flask 智能对话接口 `POST /api/ai`。";
+    updateAiBackendHint();
   } catch (error) {
     console.warn("[GreenMoodAI] request failed:", error);
     appendAiMessage(
       "assistant",
       "当前 Flask 智能对话接口暂时不可用，请先启动 app.py 后端服务。"
     );
-    aiBackendHint.textContent = "当前未成功连接 Flask 后端，请确认本地 5000 端口服务已启动。";
+    updateAiBackendHint("当前未成功连接本地Flask服务，deepseek对话暂不可用");
   } finally {
     sendAiButton.disabled = false;
     sendAiButton.textContent = "发送问题";
@@ -1300,9 +1342,15 @@ function bindEvents() {
       handleAiSend();
     }
   });
+
+  waterAlertConfirmButton.addEventListener("click", () => {
+    hasAcknowledgedLowWaterAlert = true;
+    updateLowWaterAlertVisibility(false);
+  });
 }
 
 function init() {
+  updateAiBackendHint();
   updateProfileDays();
   updateUpdatedAtLabel();
   updateComfortTipVisibility(false);
@@ -1312,6 +1360,7 @@ function init() {
   updatePlantNameUI();
   updatePlantSpeciesUI();
   updateModeUI();
+  evaluateLowWaterAlert();
   renderCameraEndpointCopy();
   renderChart(currentRange);
   renderCalendar();

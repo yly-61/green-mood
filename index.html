@@ -48,6 +48,7 @@
                 </div>
 
                 <div class="comfort-overview">
+                  <div class="comfort-accent-glow" aria-hidden="true"></div>
                   <div class="comfort-head">
                     <span>舒适度指数</span>
                     <button
@@ -342,7 +343,7 @@
                   </button>
                 </div>
                 <div class="api-footer">
-                  <span id="ai-backend-hint">当前对话将调用 Flask 后端 `POST /api/ai`。</span>
+                  <span id="ai-backend-hint">当前对话调用deepseek提供的大模型</span>
                 </div>
               </div>
             </section>
@@ -410,6 +411,19 @@
               镜头
             </button>
           </nav>
+        </div>
+
+        <div class="alert-overlay hidden" id="water-alert-overlay">
+          <div class="alert-card soft-panel" role="dialog" aria-modal="true" aria-labelledby="water-alert-title">
+            <p class="eyebrow">Water Alert</p>
+            <h3 id="water-alert-title">储备水量偏低</h3>
+            <p class="alert-copy" id="water-alert-copy">
+              当前储备水量已低于 20%，请尽快为水箱补水，避免影响自动控制。
+            </p>
+            <button class="save-name-button alert-button" id="water-alert-confirm" type="button">
+              我知道了
+            </button>
+          </div>
         </div>
 
         <div class="toast" id="toast">已发送补水命令</div>
