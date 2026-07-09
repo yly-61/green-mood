@@ -103,6 +103,13 @@ const calendarEvents = [
     detail: "自动补水 120ml",
   },
   {
+    date: "2026-07-03",
+    time: "19:15",
+    type: "manual",
+    title: "手动浇水",
+    detail: "手动补水 60ml",
+  },
+  {
     date: "2026-07-04",
     time: "18:20",
     type: "manual",
@@ -110,11 +117,32 @@ const calendarEvents = [
     detail: "手动补水 80ml",
   },
   {
+    date: "2026-07-05",
+    time: "21:10",
+    type: "manual",
+    title: "手动浇水",
+    detail: "手动补水 50ml",
+  },
+  {
     date: "2026-07-06",
     time: "08:40",
     type: "auto",
     title: "自动补水",
     detail: "自动补水 100ml",
+  },
+  {
+    date: "2026-07-07",
+    time: "20:30",
+    type: "manual",
+    title: "手动浇水",
+    detail: "手动补水 70ml",
+  },
+  {
+    date: "2026-07-08",
+    time: "18:45",
+    type: "manual",
+    title: "手动浇水",
+    detail: "手动补水 65ml",
   },
   {
     date: "2026-07-09",
@@ -199,7 +227,6 @@ const rangeButtons = document.querySelectorAll(".range-button");
 const chartTitle = document.querySelector("#chart-title");
 const trendChart = document.querySelector("#trend-chart");
 const calendarGrid = document.querySelector("#calendar-grid");
-const eventHighlight = document.querySelector("#event-highlight");
 const eventList = document.querySelector("#event-list");
 const eventListToggle = document.querySelector("#event-list-toggle");
 const calendarPrevButton = document.querySelector("#calendar-prev");
@@ -232,9 +259,9 @@ let currentCalendarMonth = new Date(
 );
 let selectedCalendarDate = new Date(calendarStartDate);
 let isEventListExpanded = false;
-let hasAcknowledgedLowWaterAlert = false;
+let hasAcknowledgedCriticalWaterAlert = false;
 let isWaterAlertVisible = false;
-let wasWaterLevelLow = deviceData.water_level < 20;
+let wasCriticalWaterLevelLow = deviceData.water_level < 5;
 
 const mqttBridgeState = {
   fetchLatestTelemetry: null,
@@ -242,7 +269,8 @@ const mqttBridgeState = {
   fetchLatestCalendarEvents: null,
 };
 
-const AI_API_URL = "https://greenmood001-279845-9-1452010214.sh.run.tcloudbase.com/api/ai";
+const AI_API_URL =
+  "https://greenmood001-279845-9-1452010214.sh.run.tcloudbase.com/api/ai";
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -378,6 +406,18 @@ function updateUpdatedAtLabel() {
   metricsUpdatedAt.textContent = `更新于 ${formatBeijingTime(lastUpdatedAt)}（北京时间）`;
 }
 
+function getBeijingHourFraction(date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Shanghai",
+  }).formatToParts(date);
+  const lookup = Object.fromEntries(parts.map((item) => [item.type, item.value]));
+  return Number(lookup.hour) + Number(lookup.minute) / 60 + Number(lookup.second) / 3600;
+}
+
 function updateComfortTipVisibility(isVisible) {
   comfortTipCard.classList.toggle("hidden", !isVisible);
   comfortTipToggle.setAttribute("aria-expanded", String(isVisible));
@@ -403,9 +443,10 @@ function renderMetrics() {
     .map(({ key, label, unit, icon, max }) => {
       const value = deviceData[key];
       const fill = clamp((value / max) * 100, 0, 100);
+      const lowWaterClass = key === "water_level" && value < 20 ? " is-low-water" : "";
 
       return `
-        <article class="metric-card">
+        <article class="metric-card${lowWaterClass}">
           <div class="metric-meta">
             <div class="metric-icon">${renderMetricIcon(icon)}</div>
             <div class="metric-label">${label}</div>
@@ -503,21 +544,21 @@ function updateLowWaterAlertVisibility(isVisible) {
 }
 
 function evaluateLowWaterAlert() {
-  const isWaterLevelLow = deviceData.water_level < 20;
+  const isWaterLevelCriticallyLow = deviceData.water_level < 5;
 
-  if (!isWaterLevelLow) {
-    hasAcknowledgedLowWaterAlert = false;
-    wasWaterLevelLow = false;
+  if (!isWaterLevelCriticallyLow) {
+    hasAcknowledgedCriticalWaterAlert = false;
+    wasCriticalWaterLevelLow = false;
     updateLowWaterAlertVisibility(false);
     return;
   }
 
-  if (!wasWaterLevelLow && !hasAcknowledgedLowWaterAlert) {
-    waterAlertCopy.textContent = `当前储备水量已降到 ${deviceData.water_level}%，请尽快为水箱补水，避免影响自动控制。`;
+  if (!wasCriticalWaterLevelLow && !hasAcknowledgedCriticalWaterAlert) {
+    waterAlertCopy.textContent = `当前储备水量已降到 ${deviceData.water_level}%，已触发缺水警告，请尽快为水箱加水。`;
     updateLowWaterAlertVisibility(true);
   }
 
-  wasWaterLevelLow = true;
+  wasCriticalWaterLevelLow = true;
 }
 
 function switchScreen(target) {
@@ -545,6 +586,49 @@ function normalizeSeries(values) {
 
 function createPolyline(points) {
   return points.map(([x, y]) => `${x},${y}`).join(" ");
+}
+
+function buildVisibleTrendPoints(values, hours, currentHourLimit, left, xStep, bottom) {
+  const normalizedValues = normalizeSeries(values);
+  const sourcePoints = normalizedValues.map((value, index) => ({
+    hour: hours[index],
+    x: left + xStep * index,
+    y: bottom - value,
+  }));
+
+  if (currentHourLimit == null || currentHourLimit >= hours[hours.length - 1]) {
+    return sourcePoints.map(({ x, y }) => [x, y]);
+  }
+
+  const visiblePoints = [];
+
+  for (let index = 0; index < sourcePoints.length; index += 1) {
+    const point = sourcePoints[index];
+
+    if (point.hour < currentHourLimit) {
+      visiblePoints.push([point.x, point.y]);
+      continue;
+    }
+
+    if (point.hour === currentHourLimit) {
+      visiblePoints.push([point.x, point.y]);
+      break;
+    }
+
+    if (index === 0) {
+      break;
+    }
+
+    const previousPoint = sourcePoints[index - 1];
+    const ratio =
+      (currentHourLimit - previousPoint.hour) / (point.hour - previousPoint.hour || 1);
+    const x = previousPoint.x + (point.x - previousPoint.x) * ratio;
+    const y = previousPoint.y + (point.y - previousPoint.y) * ratio;
+    visiblePoints.push([x, y]);
+    break;
+  }
+
+  return visiblePoints;
 }
 
 function toDateKey(date) {
@@ -629,11 +713,17 @@ function renderChart(rangeKey) {
   const top = 24;
   const bottom = 146;
   const xStep = (right - left) / (range.labels.length - 1 || 1);
+  const xHours =
+    rangeKey === "today"
+      ? [0, 6, 12, 18, 24]
+      : range.labels.map((_, index) => index);
+  const currentHourLimit =
+    rangeKey === "today" ? clamp(getBeijingHourFraction(new Date()), 0, 24) : null;
   const lineMap = [
-    { name: "soil", values: normalizeSeries(range.series.soil) },
-    { name: "humidity", values: normalizeSeries(range.series.humidity) },
-    { name: "temp", values: normalizeSeries(range.series.temp) },
-    { name: "light", values: normalizeSeries(range.series.light) },
+    { name: "soil", values: range.series.soil },
+    { name: "humidity", values: range.series.humidity },
+    { name: "temp", values: range.series.temp },
+    { name: "light", values: range.series.light },
   ];
 
   chartTitle.textContent = range.title;
@@ -656,20 +746,16 @@ function renderChart(rangeKey) {
     })
     .join("");
 
-  const markerX = left + xStep * range.markerIndex;
-  const marker = `
-    <line class="chart-marker-line" x1="${markerX}" y1="${top}" x2="${markerX}" y2="${bottom}"></line>
-    <rect class="chart-marker-pill" x="${markerX - 18}" y="${top - 16}" rx="10" ry="10" width="36" height="18"></rect>
-    <text class="chart-marker-label" x="${markerX}" y="${top - 4}" text-anchor="middle">12:00</text>
-  `;
-
   const lines = lineMap
     .map(({ name, values }) => {
-      const points = values.map((value, index) => {
-        const x = left + xStep * index;
-        const y = bottom - value;
-        return [x, y];
-      });
+      const points = buildVisibleTrendPoints(
+        values,
+        xHours,
+        currentHourLimit,
+        left,
+        xStep,
+        bottom
+      );
 
       const dots = points
         .map(
@@ -685,7 +771,7 @@ function renderChart(rangeKey) {
     })
     .join("");
 
-  trendChart.innerHTML = `${gridLines.join("")}${marker}${lines}${labels}${rightLabels}`;
+  trendChart.innerHTML = `${gridLines.join("")}${lines}${labels}${rightLabels}`;
 }
 
 function renderCalendar() {
@@ -774,25 +860,6 @@ function renderCalendar() {
   }
 
   calendarGrid.innerHTML = cells.join("");
-
-  const selectedEvent = eventLookup.get(toDateKey(selectedCalendarDate));
-
-  eventHighlight.innerHTML = selectedEvent
-    ? `
-        <img src="headshot.png" alt="植物头像" class="highlight-avatar" />
-        <div>
-          <div class="highlight-time">${formatFullDate(selectedCalendarDate)} ${selectedEvent.time}</div>
-          <div class="highlight-text">${selectedEvent.detail}</div>
-        </div>
-        <div class="highlight-arrow">›</div>
-      `
-    : `
-        <img src="headshot.png" alt="植物头像" class="highlight-avatar" />
-        <div class="highlight-empty">
-          <div class="highlight-time">${formatFullDate(selectedCalendarDate)}</div>
-          <div class="highlight-text">当天还没有补水记录</div>
-        </div>
-      `;
 
   const monthRecords = getMonthRecords(currentCalendarMonth)
     .filter((item) => item.date <= getCurrentRecordedDateKey())
@@ -1019,6 +1086,7 @@ function applyCalendarEventUpdate(nextEvents = []) {
 }
 
 function simulateTelemetryRefresh() {
+  const waterDelta = Math.random() > 0.55 ? -Math.ceil(Math.random() * 10) : Math.ceil(Math.random() * 3);
   const nextTelemetry = {
     soil_moisture: clamp(deviceData.soil_moisture + (Math.random() > 0.5 ? 1 : -1), 30, 60),
     air_humidity: clamp(deviceData.air_humidity + (Math.random() > 0.5 ? 1 : -1), 45, 70),
@@ -1028,7 +1096,7 @@ function simulateTelemetryRefresh() {
       30
     ),
     light: clamp(deviceData.light + (Math.random() > 0.5 ? 18 : -18), 200, 1200),
-    water_level: clamp(deviceData.water_level + (Math.random() > 0.5 ? 1 : 0), 40, 100),
+    water_level: clamp(deviceData.water_level + waterDelta, 0, 100),
     air_quality: clamp(deviceData.air_quality + (Math.random() > 0.5 ? 8 : -8), 300, 600),
   };
 
@@ -1319,7 +1387,7 @@ function bindEvents() {
   });
 
   waterAlertConfirmButton.addEventListener("click", () => {
-    hasAcknowledgedLowWaterAlert = true;
+    hasAcknowledgedCriticalWaterAlert = true;
     updateLowWaterAlertVisibility(false);
   });
 }

@@ -88,12 +88,13 @@ def ai_reply():
             "reply": response.choices[0].message.content,
             "source": "deepseek"
         })
-    except Exception:
-        return jsonify({
-            "reply": build_mock_reply(plant_name, plant_species, sensor_data, user_message),
-            "source": "fallback"
-        })
-
+    except Exception as e:
+      print("DeepSeek 调用失败：", repr(e), flush=True)
+      return jsonify({
+        "reply": build_mock_reply(plant_name, plant_species, sensor_data, user_message),
+        "source": "fallback",
+        "error": str(e)
+    })
 @app.route("/")
 def home():
     return "Green Mood AI 后端运行成功"

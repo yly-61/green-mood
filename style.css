@@ -514,6 +514,19 @@ button {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
+.metric-card.is-low-water {
+  background: linear-gradient(180deg, rgba(255, 244, 244, 0.98), rgba(255, 237, 237, 0.96));
+  border-color: rgba(221, 108, 108, 0.34);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 10px 24px rgba(202, 112, 112, 0.08);
+}
+
+.metric-card.is-low-water .metric-icon {
+  background: #fdeaea;
+  color: #c85a5a;
+}
+
 .metric-meta {
   display: flex;
   align-items: center;
@@ -925,47 +938,6 @@ button {
 
 .event-mark.auto {
   color: #59b63c;
-}
-
-.event-highlight {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding: 14px 16px;
-  border-radius: 22px;
-  background:
-    radial-gradient(circle at 75% 50%, rgba(221, 243, 198, 0.6), transparent 28%),
-    linear-gradient(135deg, #f1fbec, #f9fcf6);
-  color: #2d6636;
-}
-
-.highlight-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.highlight-time {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent-strong);
-}
-
-.highlight-text {
-  margin-top: 3px;
-  color: #2a302a;
-}
-
-.highlight-empty .highlight-text {
-  margin-top: 0;
-}
-
-.highlight-arrow {
-  margin-left: auto;
-  font-size: 24px;
-  color: var(--accent-strong);
 }
 
 .event-list-wrap {
