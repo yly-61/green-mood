@@ -244,7 +244,7 @@ const mqttBridgeState = {
   fetchLatestCalendarEvents: null,
 };
 
-const AI_API_URL = "http://127.0.0.1:5000/api/ai";
+const AI_API_URL = "https://greenmood-d7gj3ji8p51332452.api.tcloudbasegateway.com/v1/ai/cloudbase/api/ai";
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
