@@ -244,7 +244,7 @@ const mqttBridgeState = {
   fetchLatestCalendarEvents: null,
 };
 
-const AI_API_URL = "http://10.66.89.127:5000/api/ai";
+const AI_API_URL = "http://127.0.0.1:5000/api/ai";
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
