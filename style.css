@@ -157,7 +157,6 @@ button {
 .metrics-panel,
 .watering-card,
 .manual-card,
-.camera-card,
 .chart-card,
 .calendar-card,
 .guide-hero,
@@ -169,7 +168,6 @@ button {
 .profile-card,
 .metrics-panel,
 .manual-card,
-.camera-card,
 .chart-card,
 .calendar-card,
 .guide-hero,
@@ -488,7 +486,6 @@ button {
 .panel-head h3,
 .watering-card h3,
 .manual-card h3,
-.camera-card h3,
 .guide-card h3,
 .guide-hero h3,
 .api-card h3,
@@ -738,63 +735,6 @@ button {
   box-shadow: none;
 }
 
-.camera-card {
-  display: grid;
-  gap: 14px;
-  padding: 18px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(223, 243, 197, 0.4), transparent 24%),
-    rgba(255, 255, 255, 0.95);
-}
-
-.camera-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.camera-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 62px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: #edf1ea;
-  color: #7a8377;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.camera-pill.is-live {
-  background: #e5f7e0;
-  color: var(--accent-strong);
-}
-
-.camera-preview {
-  position: relative;
-  min-height: 188px;
-  overflow: hidden;
-  border-radius: 24px;
-  border: 1px solid rgba(84, 132, 76, 0.1);
-  background:
-    radial-gradient(circle at 50% 20%, rgba(219, 240, 201, 0.45), transparent 30%),
-    linear-gradient(180deg, rgba(244, 249, 240, 0.96), rgba(233, 242, 227, 0.98));
-}
-
-.camera-empty {
-  min-height: 188px;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  color: #6f786d;
-  font-size: 13px;
-  text-align: center;
-}
-
 .guide-species-controls {
   display: flex;
   align-items: center;
@@ -805,52 +745,6 @@ button {
 .species-input {
   flex: 1 1 180px;
   min-width: 0;
-}
-
-.camera-page-card {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(223, 243, 197, 0.48), transparent 24%),
-    rgba(255, 255, 255, 0.96);
-}
-
-.camera-preview-placeholder {
-  min-height: 240px;
-}
-
-.camera-preview-placeholder .camera-empty {
-  min-height: 240px;
-  padding: 28px;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.camera-endpoints {
-  display: grid;
-  gap: 10px;
-}
-
-.camera-endpoint-item {
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(244, 249, 241, 0.9);
-  border: 1px solid rgba(84, 132, 76, 0.08);
-}
-
-.camera-endpoint-item strong,
-.camera-endpoint-item span {
-  display: block;
-}
-
-.camera-endpoint-item strong {
-  color: var(--text);
-  font-size: 13px;
-}
-
-.camera-endpoint-item span {
-  margin-top: 5px;
-  color: #667066;
-  font-size: 12px;
-  line-height: 1.55;
 }
 
 .trend-topbar {

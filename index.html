@@ -347,50 +347,6 @@
                 </div>
               </div>
             </section>
-
-            <section class="screen" data-screen="camera">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">Camera Service</p>
-                  <h2>摄像头服务</h2>
-                </div>
-                <span class="month-pill">Backend Ready</span>
-              </div>
-
-              <div class="camera-card soft-panel camera-page-card">
-                <div class="camera-card-head">
-                  <div>
-                    <p class="eyebrow">Flask Placeholder</p>
-                    <h3>实时摄像头画面</h3>
-                  </div>
-                  <span class="camera-pill">后端预留</span>
-                </div>
-                <div class="camera-preview camera-preview-placeholder">
-                  <div class="camera-empty">
-                    当前页面只展示后端接口预留，不直接在网页端接入摄像头画面。
-                  </div>
-                </div>
-                <div class="camera-endpoints">
-                  <div class="camera-endpoint-item">
-                    <strong>GET /api/camera/status</strong>
-                    <span>读取摄像头服务状态与当前配置</span>
-                  </div>
-                  <div class="camera-endpoint-item">
-                    <strong>GET /api/camera/config</strong>
-                    <span>获取后端预留的流地址、抓拍地址与服务说明</span>
-                  </div>
-                  <div class="camera-endpoint-item">
-                    <strong>POST /api/camera/config</strong>
-                    <span>更新流地址、抓拍地址或运行状态，供后续 Flask 服务接入</span>
-                  </div>
-                </div>
-                <div class="api-footer">
-                  <span id="camera-endpoint-copy">
-                    默认预留流接口：<code>/api/camera/stream</code>，默认预留抓拍接口：<code>/api/camera/snapshot</code>。
-                  </span>
-                </div>
-              </div>
-            </section>
           </main>
 
           <nav class="tabbar" aria-label="底部导航">
@@ -405,10 +361,6 @@
             <button class="tab-button" data-target="guide" type="button">
               <span class="tab-icon">✦</span>
               指南
-            </button>
-            <button class="tab-button" data-target="camera" type="button">
-              <span class="tab-icon">◉</span>
-              镜头
             </button>
           </nav>
         </div>

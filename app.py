@@ -14,14 +14,6 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
-camera_config = {
-    "stream_url": "/api/camera/stream",
-    "snapshot_url": "/api/camera/snapshot",
-    "status": "reserved",
-    "provider": "flask",
-    "note": "摄像头服务接口已预留，等待后续接入真实视频流。"
-}
-
 
 def build_mock_reply(plant_name, plant_species, sensor_data, user_message):
     soil = sensor_data.get("soil_moisture", "--")
@@ -60,46 +52,31 @@ def ai_reply():
             model="deepseek-chat",
             messages=[
                 {
-    "role": "system",
-    "content": f"""
-你是 Green Mood（绿色心情）智能盆栽系统的 AI 助手。
+                    "role": "system",
+                    "content": f"""
+你是 Green Mood 智能盆栽系统的养护助手。
 
-你的身份：
-- 你是一个自然、友好、专业的植物养护助手。
-- 可以像 ChatGPT 一样正常聊天。
-- 同时也能够结合植物实时传感器数据提供科学养护建议。
+你的目标：
+1. 用自然、亲切、简洁的中文和用户交流。
+2. 当用户问到植物养护问题时，结合植物信息和实时传感器数据给出建议。
+3. 当用户只是打招呼、闲聊、感谢或确认时，直接自然回应，不要生硬地分析数据。
 
-回答规则：
+回答要求：
+- 优先回答用户当前最关心的问题，不要每次都重复所有传感器数据。
+- 只有在数据和问题直接相关时，才引用具体数值。
+- 如果数据看起来基本正常，就直接告诉用户“当前状态稳定”并给出下一步建议。
+- 如果数据明显异常，再说明可能原因和建议操作。
+- 不要编造不存在的硬件状态，不要过度下结论。
+- 语气像一个真实的智能助手，避免说明书式表达。
 
-① 如果用户只是聊天，例如：
-你好、hi、hello、在吗、谢谢、你是谁……
-请自然回答，不要分析植物数据。
+当前植物信息：
+- 植物名称：{plant_name}
+- 植物种类：{plant_species}
 
-② 如果用户的问题与植物有关，例如：
-要不要浇水？
-今天光照够吗？
-植物健康吗？
-空气湿度正常吗？
-为什么叶子发黄？
-……
-请结合下面提供的实时传感器数据分析回答。
-
-③ 不要每次都重复全部传感器数据。
-
-④ 只有当数据与问题相关时才引用数据。
-
-⑤ 回答语气自然、亲切，像真正的智能助手，不要机械，不要像说明书。
-
-植物信息：
-
-植物名称：{plant_name}
-植物种类：{plant_species}
-
-实时传感器数据：
-
+当前实时传感器数据：
 {sensor_data}
 """
-},
+                },
                 {
                     "role": "user",
                     "content": f"植物名称：{plant_name}\n植物种类：{plant_species}\n当前传感器数据：{sensor_data}\n用户问题：{user_message}"
@@ -116,44 +93,6 @@ def ai_reply():
             "reply": build_mock_reply(plant_name, plant_species, sensor_data, user_message),
             "source": "fallback"
         })
-
-
-@app.route("/api/camera/config", methods=["GET", "POST"])
-def camera_service_config():
-    if request.method == "POST":
-        data = request.get_json() or {}
-        for key in ("stream_url", "snapshot_url", "status", "provider", "note"):
-            if key in data and isinstance(data[key], str):
-                camera_config[key] = data[key]
-
-    return jsonify(camera_config)
-
-
-@app.route("/api/camera/status", methods=["GET"])
-def camera_service_status():
-    return jsonify({
-        "status": camera_config["status"],
-        "provider": camera_config["provider"],
-        "stream_url": camera_config["stream_url"],
-        "snapshot_url": camera_config["snapshot_url"],
-        "note": camera_config["note"]
-    })
-
-
-@app.route("/api/camera/stream", methods=["GET"])
-def camera_stream_placeholder():
-    return jsonify({
-        "status": "reserved",
-        "message": "摄像头视频流接口已预留，等待后续接入真实 Flask 视频流。"
-    }), 501
-
-
-@app.route("/api/camera/snapshot", methods=["GET"])
-def camera_snapshot_placeholder():
-    return jsonify({
-        "status": "reserved",
-        "message": "摄像头抓拍接口已预留，等待后续接入真实 Flask 图像抓拍。"
-    }), 501
 
 @app.route("/")
 def home():

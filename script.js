@@ -214,7 +214,6 @@ const aiChatIntro = document.querySelector("#ai-chat-intro");
 const aiChatInput = document.querySelector("#ai-chat-input");
 const sendAiButton = document.querySelector("#send-ai");
 const aiBackendHint = document.querySelector("#ai-backend-hint");
-const cameraEndpointCopy = document.querySelector("#camera-endpoint-copy");
 const waterAlertOverlay = document.querySelector("#water-alert-overlay");
 const waterAlertCopy = document.querySelector("#water-alert-copy");
 const waterAlertConfirmButton = document.querySelector("#water-alert-confirm");
@@ -233,7 +232,6 @@ let currentCalendarMonth = new Date(
 );
 let selectedCalendarDate = new Date(calendarStartDate);
 let isEventListExpanded = false;
-let currentCameraFeedUrl = "/api/camera/stream";
 let hasAcknowledgedLowWaterAlert = false;
 let isWaterAlertVisible = false;
 let wasWaterLevelLow = deviceData.water_level < 20;
@@ -455,14 +453,6 @@ function renderAiChatIntro() {
   }
 
   aiChatIntro.textContent = `你好，我是 ${currentPlantName} 的养护助手。当前植物种类已设置为${currentPlantSpecies}，你可以直接问我浇水、光照、温湿度或通风建议。`;
-}
-
-function renderCameraEndpointCopy() {
-  if (!cameraEndpointCopy) {
-    return;
-  }
-
-  cameraEndpointCopy.innerHTML = `默认预留流接口：<code>${currentCameraFeedUrl}</code>，默认预留抓拍接口：<code>/api/camera/snapshot</code>。`;
 }
 
 function updatePlantNameUI() {
@@ -883,15 +873,6 @@ function savePlantSpecies() {
   showToast("植物种类已更新");
 }
 
-function applyCameraFeed(url, options = {}) {
-  currentCameraFeedUrl = url.trim();
-  renderCameraEndpointCopy();
-
-  if (options.showFeedback) {
-    showToast(currentCameraFeedUrl ? "摄像头接口已更新" : "已清空摄像头接口");
-  }
-}
-
 function publishControlSafely(payload) {
   if (!window.GreenMoodMQTT || typeof window.GreenMoodMQTT.publishControl !== "function") {
     return false;
@@ -1123,11 +1104,6 @@ window.GreenMoodBridge = {
       updatePlantSpeciesUI();
     }
   },
-  setCameraFeedUrl(nextUrl) {
-    if (typeof nextUrl === "string") {
-      applyCameraFeed(nextUrl);
-    }
-  },
   refresh() {
     return refreshDashboard();
   },
@@ -1138,7 +1114,6 @@ window.GreenMoodBridge = {
       calendarEvents: [...calendarEvents],
       plantName: currentPlantName,
       plantSpecies: currentPlantSpecies,
-      cameraFeedUrl: currentCameraFeedUrl,
       updatedAt: lastUpdatedAt.toISOString(),
     };
   },
@@ -1361,7 +1336,6 @@ function init() {
   updatePlantSpeciesUI();
   updateModeUI();
   evaluateLowWaterAlert();
-  renderCameraEndpointCopy();
   renderChart(currentRange);
   renderCalendar();
   bindEvents();
